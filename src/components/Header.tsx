@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Zap, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -9,6 +17,7 @@ interface HeaderProps {
 
 const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut, loading } = useAuth();
 
   return (
     <header className="fixed top-0 w-full z-50 glass border-b border-border/20">
@@ -39,12 +48,38 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" onClick={onLoginClick}>
-              Login
-            </Button>
-            <Button variant="hero" size="lg" onClick={onSignupClick}>
-              Get Started
-            </Button>
+            {loading ? (
+              <div className="h-8 w-24 bg-muted/50 rounded animate-pulse" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <User className="w-4 h-4 mr-2" />
+                    {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={onLoginClick}>
+                  Login
+                </Button>
+                <Button variant="hero" size="lg" onClick={onSignupClick}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -70,12 +105,29 @@ const Header = ({ onLoginClick, onSignupClick }: HeaderProps) => {
                 Pricing
               </a>
               <div className="flex flex-col space-y-2 pt-4 border-t border-border/20">
-                <Button variant="ghost" onClick={onLoginClick}>
-                  Login
-                </Button>
-                <Button variant="hero" size="lg" onClick={onSignupClick}>
-                  Get Started
-                </Button>
+                {loading ? (
+                  <div className="h-8 w-full bg-muted/50 rounded animate-pulse" />
+                ) : user ? (
+                  <>
+                    <div className="flex items-center space-x-2 p-2 rounded-lg bg-muted/50">
+                      <User className="w-4 h-4" />
+                      <span className="text-sm">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}</span>
+                    </div>
+                    <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" onClick={onLoginClick}>
+                      Login
+                    </Button>
+                    <Button variant="hero" size="lg" onClick={onSignupClick}>
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
